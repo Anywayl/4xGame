@@ -1,52 +1,53 @@
 import { Application, Loader, Texture, AnimatedSprite } from "pixi.js";
 import "./style.css";
+import Main from "./game/main";
+import ScreenUtils from "./utils/screenUtils";
 
-const gameWidth = 800;
-const gameHeight = 600;
+const gameWidth = 1920;
+const gameHeight = 1080;
+const main = new Main();
 
 const app = new Application({
     backgroundColor: 0xd3d3d3,
     width: gameWidth,
     height: gameHeight,
+    autoDensity: true,
 });
 
 window.onload = async (): Promise<void> => {
-    await loadGameAssets();
-
     document.body.appendChild(app.view);
 
     resizeCanvas();
 
-    const birdFromSprite = getBird();
-    birdFromSprite.anchor.set(0.5, 0.5);
-    birdFromSprite.position.set(gameWidth / 2, 530);
+    new ScreenUtils(app);
 
-    app.stage.addChild(birdFromSprite);
+    app.stage.addChild(main);
     app.stage.interactive = true;
 };
-
-async function loadGameAssets(): Promise<void> {
-    return new Promise((res, rej) => {
-        const loader = Loader.shared;
-        loader.add("rabbit", "./assets/simpleSpriteSheet.json");
-
-        loader.onComplete.once(() => {
-            res();
-        });
-
-        loader.onError.once(() => {
-            rej();
-        });
-
-        loader.load();
-    });
-}
 
 function resizeCanvas(): void {
     const resize = () => {
         app.renderer.resize(window.innerWidth, window.innerHeight);
-        app.stage.scale.x = window.innerWidth / gameWidth;
-        app.stage.scale.y = window.innerHeight / gameHeight;
+        // const scaleX = window.innerWidth / gameWidth;
+        // const scaleY = window.innerHeight / gameHeight;
+        // const appScale = Math.max(scaleX, scaleY);
+        // app.stage.scale.set(appScale)
+        // main.x = app.stage.width / 2 - actualWidth() / 2;
+        // main.y = app.stage.height / 2 - actualHeight() / 2;
+
+        // works fine but not
+        // const scaleFactor = Math.min(
+        //     window.innerWidth / gameWidth,
+        //     window.innerHeight / gameHeight
+        // );
+        // const newWidth = Math.ceil(gameWidth * scaleFactor);
+        // const newHeight = Math.ceil(gameHeight * scaleFactor);
+
+        // app.renderer.view.style.width = `${newWidth}px`;
+        // app.renderer.view.style.height = `${newHeight}px`;
+
+        // app.renderer.resize(newWidth, newHeight);
+        // main.scale.set(scaleFactor);
     };
 
     resize();
@@ -54,17 +55,14 @@ function resizeCanvas(): void {
     window.addEventListener("resize", resize);
 }
 
-function getBird(): AnimatedSprite {
-    const bird = new AnimatedSprite([
-        Texture.from("birdUp.png"),
-        Texture.from("birdMiddle.png"),
-        Texture.from("birdDown.png"),
-    ]);
+function actualWidth() {
+    const { width, height } = app.stage;
+    const isWidthConstrained = width < (height * 9) / 16;
+    return isWidthConstrained ? width : (height * 9) / 16;
+}
 
-    bird.loop = true;
-    bird.animationSpeed = 0.1;
-    bird.play();
-    bird.scale.set(3);
-
-    return bird;
+function actualHeight() {
+    const { width, height } = app.stage;
+    const isHeightConstrained = (width * 16) / 9 > height;
+    return isHeightConstrained ? height : (width * 16) / 9;
 }
