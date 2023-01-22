@@ -1,8 +1,6 @@
 import { Application, Loader, Texture, AnimatedSprite } from "pixi.js";
 import "./style.css";
 
-declare const VERSION: string;
-
 const gameWidth = 800;
 const gameHeight = 600;
 
